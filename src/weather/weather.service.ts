@@ -1,5 +1,7 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import axios from 'axios';
 import {
   WeatherResponse,
@@ -15,13 +17,23 @@ export class WeatherService {
   private readonly baseUrl: string;
   private readonly geoUrl: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {
     this.apiKey = this.configService.get<string>('WEATHER_API_KEY');
     this.baseUrl = 'https://api.openweathermap.org/data/2.5';
     this.geoUrl = 'http://api.openweathermap.org/geo/1.0';
   }
 
   private async getCoordinates(city: string): Promise<GeocodingResponse> {
+    const cacheKey = `geo_${city}`;
+    const cachedData = await this.cacheManager.get<GeocodingResponse>(cacheKey);
+
+    if (cachedData) {
+      return cachedData;
+    }
+
     try {
       const response = await axios.get(
         `${this.geoUrl}/direct?q=${encodeURIComponent(city)}&limit=1&appid=${this.apiKey}`,
@@ -31,6 +43,7 @@ export class WeatherService {
         throw new HttpException('City not found', HttpStatus.NOT_FOUND);
       }
 
+      await this.cacheManager.set(cacheKey, response.data[0], 3600000); // Cache for 1 hour
       return response.data[0];
     } catch (error) {
       if (error.response?.status === 404 || error instanceof HttpException) {
@@ -60,12 +73,19 @@ export class WeatherService {
   }
 
   async getCurrentWeather({ lat, lon }: LocationDto): Promise<WeatherResponse> {
+    const cacheKey = `weather_${lat}_${lon}`;
+    const cachedData = await this.cacheManager.get<WeatherResponse>(cacheKey);
+
+    if (cachedData) {
+      return cachedData;
+    }
+
     try {
       const response = await axios.get(
         `${this.baseUrl}/weather?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`,
       );
 
-      return {
+      const weatherData: WeatherResponse = {
         temperature: response.data.main.temp,
         feels_like: response.data.main.feels_like,
         temp_min: response.data.main.temp_min,
@@ -83,6 +103,9 @@ export class WeatherService {
         sunrise: response.data.sys.sunrise,
         sunset: response.data.sys.sunset,
       };
+
+      await this.cacheManager.set(cacheKey, weatherData, 600000); // Cache for 10 minutes
+      return weatherData;
     } catch (error) {
       if (error.response?.status === 404) {
         throw new HttpException('Location not found', HttpStatus.NOT_FOUND);
@@ -95,6 +118,13 @@ export class WeatherService {
   }
 
   async getForecast({ lat, lon }: LocationDto): Promise<ForecastResponse> {
+    const cacheKey = `forecast_${lat}_${lon}`;
+    const cachedData = await this.cacheManager.get<ForecastResponse>(cacheKey);
+
+    if (cachedData) {
+      return cachedData;
+    }
+
     try {
       const response = await axios.get(
         `${this.baseUrl}/forecast?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`,
@@ -116,11 +146,14 @@ export class WeatherService {
         clouds: item.clouds.all,
       }));
 
-      return {
+      const forecastData: ForecastResponse = {
         city: response.data.city.name,
         country: response.data.city.country,
         forecast: forecast,
       };
+
+      await this.cacheManager.set(cacheKey, forecastData, 1800000); // Cache for 30 minutes
+      return forecastData;
     } catch (error) {
       if (error.response?.status === 404) {
         throw new HttpException('Location not found', HttpStatus.NOT_FOUND);

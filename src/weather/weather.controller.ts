@@ -1,4 +1,12 @@
-import { Controller, Get, Query, ValidationPipe, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  ValidationPipe,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { WeatherService } from './weather.service';
 import {
   LocationDto,
@@ -8,6 +16,7 @@ import {
 } from './dto/weather.dto';
 
 @Controller('weather')
+@UseGuards(ThrottlerGuard)
 export class WeatherController {
   constructor(private readonly weatherService: WeatherService) {}
 
