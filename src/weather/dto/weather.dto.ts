@@ -1,4 +1,4 @@
-import { IsNumber, IsNotEmpty } from 'class-validator';
+import { IsNumber, IsNotEmpty, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class LocationDto {
@@ -11,6 +11,20 @@ export class LocationDto {
   @IsNotEmpty()
   @Type(() => Number)
   lon: number;
+}
+
+export class CityDto {
+  @IsString()
+  @IsNotEmpty()
+  city: string;
+}
+
+export interface GeocodingResponse {
+  name: string;
+  lat: number;
+  lon: number;
+  country: string;
+  state?: string;
 }
 
 export class WeatherResponse {

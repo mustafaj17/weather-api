@@ -5,16 +5,58 @@ import {
   WeatherResponse,
   ForecastResponse,
   LocationDto,
+  GeocodingResponse,
+  CityDto,
 } from './dto/weather.dto';
 
 @Injectable()
 export class WeatherService {
   private readonly apiKey: string;
   private readonly baseUrl: string;
+  private readonly geoUrl: string;
 
   constructor(private configService: ConfigService) {
     this.apiKey = this.configService.get<string>('WEATHER_API_KEY');
     this.baseUrl = 'https://api.openweathermap.org/data/2.5';
+    this.geoUrl = 'http://api.openweathermap.org/geo/1.0';
+  }
+
+  private async getCoordinates(city: string): Promise<GeocodingResponse> {
+    try {
+      const response = await axios.get(
+        `${this.geoUrl}/direct?q=${encodeURIComponent(city)}&limit=1&appid=${this.apiKey}`,
+      );
+
+      if (!response.data || response.data.length === 0) {
+        throw new HttpException('City not found', HttpStatus.NOT_FOUND);
+      }
+
+      return response.data[0];
+    } catch (error) {
+      if (error.response?.status === 404 || error instanceof HttpException) {
+        throw new HttpException('City not found', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Geocoding service unavailable',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
+
+  async getCurrentWeatherByCity({ city }: CityDto): Promise<WeatherResponse> {
+    const coordinates = await this.getCoordinates(city);
+    return this.getCurrentWeather({
+      lat: coordinates.lat,
+      lon: coordinates.lon,
+    });
+  }
+
+  async getForecastByCity({ city }: CityDto): Promise<ForecastResponse> {
+    const coordinates = await this.getCoordinates(city);
+    return this.getForecast({
+      lat: coordinates.lat,
+      lon: coordinates.lon,
+    });
   }
 
   async getCurrentWeather({ lat, lon }: LocationDto): Promise<WeatherResponse> {
