@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { WeatherModule } from './weather/weather.module';
+import { LocationsModule } from './locations/locations.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { WeatherModule } from './weather/weather.module';
     }),
     DatabaseModule,
     WeatherModule,
+    LocationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
