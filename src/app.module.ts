@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { WeatherModule } from './weather/weather.module';
 import { LocationsModule } from './locations/locations.module';
+import { GraphQLAppModule } from './graphql/graphql.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { LocationsModule } from './locations/locations.module';
     DatabaseModule,
     WeatherModule,
     LocationsModule,
+    GraphQLAppModule,
   ],
   controllers: [AppController],
   providers: [AppService],
