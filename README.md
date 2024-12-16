@@ -64,7 +64,7 @@ npm run start:prod
 
 ## FAQ
 
-### If you see the error 'ERROR [TypeOrmModule] Unable to connect to the database.'
+### If you see the error `ERROR [TypeOrmModule] Unable to connect to the database.`
 
 - change the host in the .env file to your local ip address
 - to get your local ip address, run `ifconfig` or `ipconfig` in your terminal or
@@ -136,32 +136,6 @@ query {
   }
 }
 ```
-
-## Caching Strategy
-
-The application implements a multi-level caching strategy to optimize performance and reduce API calls:
-
-1. **Geocoding Cache**
-
-   - City coordinates are cached for 1 hour
-   - Key format: `geo_{city}`
-   - Reduces redundant geocoding API calls
-
-2. **Current Weather Cache**
-
-   - Weather data is cached for 10 minutes
-   - Key format: `weather_{lat}_{lon}`
-   - Balances data freshness with API usage
-
-3. **Forecast Cache**
-   - Forecast data is cached for 30 minutes
-   - Key format: `forecast_{lat}_{lon}`
-   - Longer cache duration due to less frequent updates
-
-The caching implementation uses the `@nestjs/cache-manager` with the following configuration:
-
-- Global cache TTL: 10 minutes
-- Maximum cache items: 100
 
 ## License
 
