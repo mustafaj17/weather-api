@@ -104,6 +104,31 @@ The API will be available at `http://localhost:3000`
   - Parameters:
     - `city`: City name (required)
 
+#### Favorite Locations
+
+- **POST** `/locations`
+
+  - Save a location as favorite
+  - Authentication: Required (JWT)
+  - Request Body:
+    ```json
+    {
+      "city": "string"
+    }
+    ```
+
+- **GET** `/locations`
+
+  - Get all favorite locations for the authenticated user
+  - Authentication: Required (JWT)
+  - Response: Array of locations with id, city, and createdAt fields
+
+- **DELETE** `/locations/{id}`
+  - Delete a favorite location
+  - Authentication: Required (JWT)
+  - Parameters:
+    - `id`: Location ID (UUID format, required)
+
 ### GraphQL Endpoints
 
 Available at `/graphql`
@@ -134,6 +159,33 @@ query {
       # ... other fields
     }
   }
+}
+
+# Get favorite locations
+query {
+  getFavoriteLocations {
+    id
+    city
+    createdAt
+  }
+}
+```
+
+#### Mutations
+
+```graphql
+# Add favorite location
+mutation {
+  addFavoriteLocation(city: "London") {
+    id
+    city
+    createdAt
+  }
+}
+
+# Remove favorite location
+mutation {
+  removeFavoriteLocation(id: "uuid")
 }
 ```
 
