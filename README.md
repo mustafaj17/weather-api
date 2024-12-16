@@ -109,7 +109,6 @@ The API will be available at `http://localhost:3000`
 - **POST** `/locations`
 
   - Save a location as favorite
-  - Authentication: Required (JWT)
   - Request Body:
     ```json
     {
@@ -119,13 +118,10 @@ The API will be available at `http://localhost:3000`
 
 - **GET** `/locations`
 
-  - Get all favorite locations for the authenticated user
-  - Authentication: Required (JWT)
   - Response: Array of locations with id, city, and createdAt fields
 
 - **DELETE** `/locations/{id}`
   - Delete a favorite location
-  - Authentication: Required (JWT)
   - Parameters:
     - `id`: Location ID (UUID format, required)
 
