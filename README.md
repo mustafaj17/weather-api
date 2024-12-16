@@ -62,6 +62,14 @@ npm run build
 npm run start:prod
 ```
 
+## FAQ
+
+### If you see the error 'ERROR [TypeOrmModule] Unable to connect to the database.'
+
+- change the host in the .env file to your local ip address
+- to get your local ip address, run `ifconfig` or `ipconfig` in your terminal or
+- check network settings in your computer
+
 The API will be available at `http://localhost:3000`
 
 ## API Documentation
